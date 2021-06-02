@@ -1,15 +1,16 @@
 import { Vim, ensureNumber } from './deps.ts';
 
-const once = <A extends unknown[], R>(f: (...args: A) => R) => {
+const once = <A extends unknown[], R extends Promise<unknown>>(f: (...args: A) => R) => {
+  let v: R | undefined;
   return (...args: A): R => {
-    return f(...args);
+    return v || (v = f(...args));
   };
 };
 
-const init = once(async () => {
+const init = once(async (vim: Vim) => {
   const path = new URL('.', import.meta.url);
   path.pathname = path.pathname + 'popup.vim';
-  await Vim.get().load(path);
+  await vim.load(path);
 });
 
 /**
@@ -25,9 +26,9 @@ type PopupWindowInfo = { row: number; col: number; width: number; height: number
 /**
  * Open popup window.
  */
-export const open = async (bufnr: number, style: PopupWindowStyle): Promise<number> => {
-  await init();
-  const winid = await Vim.get().call('g:Denops_popup_window_open', bufnr, style);
+export const open = async (vim: Vim, bufnr: number, style: PopupWindowStyle): Promise<number> => {
+  await init(vim);
+  const winid = await vim.call('g:Denops_popup_window_open', bufnr, style);
   ensureNumber(winid);
   return winid;
 };
@@ -35,51 +36,53 @@ export const open = async (bufnr: number, style: PopupWindowStyle): Promise<numb
 /**
  * Move popup window.
  */
-export const move = async (winid: number, style: PopupWindowStyle): Promise<void> => {
-  await init();
-  await assert(winid);
-  await Vim.get().call('g:Denops_popup_window_move', winid, style);
+export const move = async (vim: Vim, winid: number, style: PopupWindowStyle): Promise<void> => {
+  await init(vim);
+  await assert(vim, winid);
+  await vim.call('g:Denops_popup_window_move', winid, style);
 };
 
 /**
  * Close popup window.
  */
-export const close = async (winid: number): Promise<void> => {
-  await init();
-  await assert(winid);
-  await Vim.get().call('g:Deops_popup_window_close', winid);
+export const close = async (vim: Vim, winid: number): Promise<void> => {
+  await init(vim);
+  await assert(vim, winid);
+  await vim.call('g:Denops_popup_window_close', winid);
 };
 
 /**
  * Get if specified popup window visible or not.
  */
-export const info = async (winid: number): Promise<PopupWindowInfo> => {
-  await init();
-  await assert(winid);
-  return await Vim.get().call('g:Deops_popup_window_info', winid) as PopupWindowInfo;
+export const info = async (vim: Vim, winid: number): Promise<PopupWindowInfo> => {
+  await init(vim);
+  await assert(vim, winid);
+  return await vim.call('g:Denops_popup_window_info', winid) as PopupWindowInfo;
 };
 
 /**
  * Get if specified popup window visible or not.
  */
-export const isVisible = async (winid: number): Promise<void> => {
-  await init();
-  await assert(winid);
-  await Vim.get().call('g:Deops_popup_window_is_visible', winid);
+export const isVisible = async (vim: Vim, winid: number): Promise<boolean> => {
+  await init(vim);
+  await assert(vim, winid);
+  const is = await vim.call('g:Denops_popup_window_is_visible', winid);
+  ensureNumber(is);
+  return is === 1;
 };
 
 /**
  * Assert if specified winid is popup or not.
 */
-export const isPopupWindow = async (winid: number): Promise<boolean> => {
-  await init();
-  const isPopupWindow = await Vim.get().call('g:Deops_popup_window_is_popup_window', winid);
-  ensureNumber(isPopupWindow);
-  return isPopupWindow === 1;
+export const isPopupWindow = async (vim: Vim, winid: number): Promise<boolean> => {
+  await init(vim);
+  const is = await vim.call('g:Denops_popup_window_is_popup_window', winid);
+  ensureNumber(is);
+  return is=== 1;
 };
 
-const assert = async (winid: number): Promise<void> => {
-  if (await isPopupWindow(winid)) {
+const assert = async (vim: Vim, winid: number): Promise<void> => {
+  if (!(await isPopupWindow(vim, winid))) {
     throw new TypeError(`Invalid winid: ${winid} is not a popup window.`);
   }
 };

@@ -11,28 +11,24 @@ function! g:Denops_popup_window_move(...) abort
   return call(function('s:_move'), a:000)
 endfunction
 
-function! g:Denops_popup_window_enter(...) abort
-  return call(function('s:_enter'), a:000)
-endfunction
-
 function! g:Denops_popup_window_close(...) abort
   return call(function('s:_close'), a:000)
-endfunction
-
-function! g:Denops_popup_window_is_visible(...) abort
-  return call(function('s:_is_visible'), a:000)
 endfunction
 
 function! g:Denops_popup_window_info(...) abort
   return call(function('s:_info'), a:000)
 endfunction
 
-function! g:Denops_popup_window_is_popup(...) abort
-  return call(function('s:_is_popup'), a:000)
+function! g:Denops_popup_window_is_visible(...) abort
+  return call(function('s:_is_visible'), a:000)
+endfunction
+
+function! g:Denops_popup_window_is_popup_window(...) abort
+  return call(function('s:_is_popup_window'), a:000)
 endfunction
 
 "
-" open
+" _open
 "
 if has('nvim')
   function! s:_open(bufnr, style) abort
@@ -45,12 +41,11 @@ else
 endif
 
 "
-" close
+" _close
 "
 if has('nvim')
   function! s:_close(winid) abort
     call nvim_win_close(a:winid, v:true)
-    call s:_notify_closed()
   endfunction
 else
   function! s:_close(winid) abort
@@ -59,47 +54,20 @@ else
 endif
 
 "
-" move
+" _move
 "
 if has('nvim')
-  function! s:_move(self, winid, bufnr, style) abort
+  function! s:_move(winid, style) abort
     call nvim_win_set_config(a:winid, s:_style(a:style))
-    if a:bufnr != nvim_win_get_buf(a:winid)
-      call nvim_win_set_buf(a:winid, a:bufnr)
-    endif
-    call s:Window.scroll(a:winid, a:style.topline)
-    return a:winid
   endfunction
 else
-  function! s:_move(self, winid, bufnr, style) abort
-    " vim's popup window can't change bufnr so open new popup in here.
-    if a:bufnr != winbufnr(a:winid)
-      let l:On_closed = a:self._on_closed
-      let a:self._on_closed = { -> {} }
-      call s:_close(a:winid)
-      let a:self._on_closed = l:On_closed
-      return s:_open(a:bufnr, a:style, { -> a:self._on_closed() })
-    endif
+  function! s:_move(winid, style) abort
     call popup_move(a:winid, s:_style(a:style))
-    return a:winid
   endfunction
 endif
 
 "
-" enter
-"
-if has('nvim')
-  function! s:_enter(winid) abort
-    call win_gotoid(a:winid)
-  endfunction
-else
-  function! s:_enter(winid) abort
-    " not supported.
-  endfunction
-endif
-
-"
-" info
+" _info
 "
 if has('nvim')
   function! s:_info(winid) abort
@@ -126,21 +94,42 @@ else
 endif
 
 "
-" is_popup
+" _is_visible
 "
 if has('nvim')
-  function! s:_is_popup(winid) abort
-    let l:config = nvim_win_get_config(a:winid)
-    return empty(l:config) || !empty(get(l:config, 'relative', ''))
+  function! s:_is_visible(winid) abort
+    try
+      return !!(type(a:winid) == type(0) && nvim_win_is_valid(a:winid) && nvim_win_get_number(a:winid) != -1)
+    catch /.*/
+    endtry
+    return 0
   endfunction
 else
-  function! s:_is_popup(winid) abort
-    return winheight(a:winid) != -1 && win_id2win(a:winid) == 0
+  function! s:_is_visible(winid) abort
+    return !!(type(a:winid) == type(0) && winheight(a:winid) != -1)
   endfunction
 endif
 
 "
-" style
+" _is_popup_window
+"
+if has('nvim')
+  function! s:_is_popup_window(winid) abort
+    try
+      let l:config = nvim_win_get_config(a:winid)
+      return !!(empty(l:config) || !empty(get(l:config, 'relative', '')))
+    catch /.*/
+    endtry
+    return 0
+  endfunction
+else
+  function! s:_is_popup_window(winid) abort
+    return !!(winheight(a:winid) != -1 && win_id2win(a:winid) == 0)
+  endfunction
+endif
+
+"
+" _style
 "
 if has('nvim')
   function! s:_style(style) abort
@@ -219,6 +208,9 @@ function! s:_resolve_origin(style) abort
   return a:style
 endfunction
 
+"
+" _resolve_border
+"
 if has('nvim')
   function! s:_resolve_border(style) abort
     if !empty(get(a:style, 'border', v:null))
