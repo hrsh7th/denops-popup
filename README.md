@@ -76,5 +76,5 @@ console.log(await isPopupWindow(vim, winid));
 
 ## NOTE
 
-All API excepts open and isPopupWindow will throw error if provided winid is not a popup window.
+The APIs excepts open, isVisible and isPopupWindow will throw error if provided winid is not a popup window.
 

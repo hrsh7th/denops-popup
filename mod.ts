@@ -61,14 +61,15 @@ export const info = async (vim: Vim, winid: number): Promise<PopupWindowInfo> =>
 };
 
 /**
- * Get if specified popup window visible or not.
+ * Get if specified popup window is visible or not.
+ *
+ * NOTE: If specified winid is not a popup window, this API always returns false.
  */
 export const isVisible = async (vim: Vim, winid: number): Promise<boolean> => {
   await init(vim);
-  await assert(vim, winid);
   const is = await vim.call('g:Denops_popup_window_is_visible', winid);
   ensureNumber(is);
-  return is === 1;
+  return (is === 1) && isPopupWindow(vim, winid);
 };
 
 /**
@@ -78,7 +79,7 @@ export const isPopupWindow = async (vim: Vim, winid: number): Promise<boolean> =
   await init(vim);
   const is = await vim.call('g:Denops_popup_window_is_popup_window', winid);
   ensureNumber(is);
-  return is=== 1;
+  return is === 1;
 };
 
 const assert = async (vim: Vim, winid: number): Promise<void> => {
