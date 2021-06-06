@@ -1,34 +1,63 @@
-import { Vim, ensureNumber } from './deps.ts';
+import { ensureNumber, Vim } from "./deps.ts";
 
-const once = <A extends unknown[], R extends Promise<unknown>>(f: (...args: A) => R) => {
+const once = <A extends unknown[], R extends Promise<unknown>>(
+  f: (...args: A) => R,
+) => {
   let v: R | undefined;
   return (...args: A): R => {
-    return v || (v = f(...args));
+    return (Deno.env.get('DENOPS_POPUP_TEST') !== '1' && v) || (v = f(...args));
   };
 };
 
 const init = once(async (vim: Vim) => {
-  const path = new URL('.', import.meta.url);
-  path.pathname = path.pathname + 'popup.vim';
+  const path = new URL(".", import.meta.url);
+  path.pathname = path.pathname + "popup.vim";
   await vim.load(path);
 });
 
 /**
  * popup window style definition.
  */
-type PopupWindowStyle = { row: number; col: number; width: number; height: number; border?: boolean; origin?: 'topleft' | 'topright' | 'topcenter' | 'bottomleft' | 'bottomright' | 'bottomcenter' | 'centerleft' | 'centerright' | 'centercenter'};
+type PopupWindowStyle = {
+  row: number;
+  col: number;
+  width: number;
+  height: number;
+  border?: boolean;
+  topline?: number;
+  origin?:
+    | "topleft"
+    | "topright"
+    | "topcenter"
+    | "bottomleft"
+    | "bottomright"
+    | "bottomcenter"
+    | "centerleft"
+    | "centerright"
+    | "centercenter";
+};
 
 /**
  * popup window information.
  */
-type PopupWindowInfo = { row: number; col: number; width: number; height: number; topline: number; };
+type PopupWindowInfo = {
+  row: number;
+  col: number;
+  width: number;
+  height: number;
+  topline: number;
+};
 
 /**
  * Open popup window.
  */
-export const open = async (vim: Vim, bufnr: number, style: PopupWindowStyle): Promise<number> => {
+export const open = async (
+  vim: Vim,
+  bufnr: number,
+  style: PopupWindowStyle,
+): Promise<number> => {
   await init(vim);
-  const winid = await vim.call('g:Denops_popup_window_open', bufnr, style);
+  const winid = await vim.call("g:Denops_popup_window_open", bufnr, style);
   ensureNumber(winid);
   return winid;
 };
@@ -36,10 +65,14 @@ export const open = async (vim: Vim, bufnr: number, style: PopupWindowStyle): Pr
 /**
  * Move popup window.
  */
-export const move = async (vim: Vim, winid: number, style: PopupWindowStyle): Promise<void> => {
+export const move = async (
+  vim: Vim,
+  winid: number,
+  style: PopupWindowStyle,
+): Promise<void> => {
   await init(vim);
   await assert(vim, winid);
-  await vim.call('g:Denops_popup_window_move', winid, style);
+  await vim.call("g:Denops_popup_window_move", winid, style);
 };
 
 /**
@@ -48,16 +81,19 @@ export const move = async (vim: Vim, winid: number, style: PopupWindowStyle): Pr
 export const close = async (vim: Vim, winid: number): Promise<void> => {
   await init(vim);
   await assert(vim, winid);
-  await vim.call('g:Denops_popup_window_close', winid);
+  await vim.call("g:Denops_popup_window_close", winid);
 };
 
 /**
  * Get if specified popup window visible or not.
  */
-export const info = async (vim: Vim, winid: number): Promise<PopupWindowInfo> => {
+export const info = async (
+  vim: Vim,
+  winid: number,
+): Promise<PopupWindowInfo> => {
   await init(vim);
   await assert(vim, winid);
-  return await vim.call('g:Denops_popup_window_info', winid) as PopupWindowInfo;
+  return await vim.call("g:Denops_popup_window_info", winid) as PopupWindowInfo;
 };
 
 /**
@@ -67,7 +103,7 @@ export const info = async (vim: Vim, winid: number): Promise<PopupWindowInfo> =>
  */
 export const isVisible = async (vim: Vim, winid: number): Promise<boolean> => {
   await init(vim);
-  const is = await vim.call('g:Denops_popup_window_is_visible', winid);
+  const is = await vim.call("g:Denops_popup_window_is_visible", winid);
   ensureNumber(is);
   return (is === 1) && isPopupWindow(vim, winid);
 };
@@ -75,9 +111,12 @@ export const isVisible = async (vim: Vim, winid: number): Promise<boolean> => {
 /**
  * Assert if specified winid is popup or not.
 */
-export const isPopupWindow = async (vim: Vim, winid: number): Promise<boolean> => {
+export const isPopupWindow = async (
+  vim: Vim,
+  winid: number,
+): Promise<boolean> => {
   await init(vim);
-  const is = await vim.call('g:Denops_popup_window_is_popup_window', winid);
+  const is = await vim.call("g:Denops_popup_window_is_popup_window", winid);
   ensureNumber(is);
   return is === 1;
 };
@@ -87,4 +126,3 @@ const assert = async (vim: Vim, winid: number): Promise<void> => {
     throw new TypeError(`Invalid winid: ${winid} is not a popup window.`);
   }
 };
-
