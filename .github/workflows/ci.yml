@@ -1,0 +1,69 @@
+name: CI
+
+env:
+  DENO_VERSION: 1.x
+  REPO_PATH: "${{ env.GITHUB_WORKSPACE }}/repo"
+  DENOPS_PATH: "${{ env.GITHUB_WORKSPACE }}/denops.vim"
+  VIM_VERSION: "v8.1.2424"
+  NVIM_VERSION: "v0.4.4"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  CI:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.REPO_PATH }}
+
+      - name: Checkout denops.vim
+        uses: actions/checkout@v2
+        with:
+          repository: "vim-denops/denops.vim"
+          path: ${{ env.DENOPS_PATH }}
+
+      - name: Setup deno
+        uses: denoland/setup-deno@main
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
+
+      - name: Setup vim
+        uses: rhysd/action-setup-vim@v1
+        id: vim
+        with:
+          version: ${{ env.VIM_VERSION }}
+
+      - name: Setup nvim
+        uses: rhysd/action-setup-vim@v1
+        id: nvim
+        with:
+          neovim: true
+          version: ${{ env.NVIM_VERSION }}
+
+      - name: Check Vim&Nvim
+        run: |
+          echo ${DENOPS_TEST_VIM}
+          ${DENOPS_TEST_VIM} --version
+          echo ${DENOPS_TEST_NVIM}
+          ${DENOPS_TEST_NVIM} --version
+        env:
+          DENOPS_TEST_VIM: ${{ steps.vim.outputs.executable }}
+          DENOPS_TEST_NVIM: ${{ steps.nvim.outputs.executable }}
+
+      - name: Test
+        run: |
+          make test
+        env:
+          DENOPS_TEST_VIM: ${{ steps.vim.outputs.executable }}
+          DENOPS_TEST_NVIM: ${{ steps.nvim.outputs.executable }}
+        timeout-minutes: 5
+        working-directory: ${{ env.REPO_PATH }}
+

@@ -9,7 +9,7 @@ vim/neovim's floating/popup window polyfill for denops.
 Open popup window with specified buffer.
 
 ```typescript
-import { open } from 'https://deno.land/x/denops_popup/mod.ts';
+import { open } from "https://deno.land/x/denops_popup/mod.ts";
 
 await open(vim, bufnr, {
   row: 1,
@@ -24,7 +24,7 @@ await open(vim, bufnr, {
 Move specified popup window.
 
 ```typescript
-import { move } from 'https://deno.land/x/denops_popup/mod.ts';
+import { move } from "https://deno.land/x/denops_popup/mod.ts";
 
 await move(vim, winid, {
   row: 1,
@@ -39,7 +39,7 @@ await move(vim, winid, {
 Close specified popup window.
 
 ```typescript
-import { close } from 'https://deno.land/x/denops_popup/mod.ts';
+import { close } from "https://deno.land/x/denops_popup/mod.ts";
 
 await close(vim, winid);
 ```
@@ -49,7 +49,7 @@ await close(vim, winid);
 Get specified popup window's information.
 
 ```typescript
-import { info } from 'https://deno.land/x/denops_popup/mod.ts';
+import { info } from "https://deno.land/x/denops_popup/mod.ts";
 
 console.log(await info(vim, winid));
 ```
@@ -59,7 +59,7 @@ console.log(await info(vim, winid));
 Get if specified popup window is visible or not.
 
 ```typescript
-import { isVisible } from 'https://deno.land/x/denops_popup/mod.ts';
+import { isVisible } from "https://deno.land/x/denops_popup/mod.ts";
 
 console.log(await isVisible(vim, winid));
 ```
@@ -69,12 +69,12 @@ console.log(await isVisible(vim, winid));
 Get if specified popup window is popup window or not.
 
 ```typescript
-import { isPopupWindow } from 'https://deno.land/x/denops_popup/mod.ts';
+import { isPopupWindow } from "https://deno.land/x/denops_popup/mod.ts";
 
 console.log(await isPopupWindow(vim, winid));
 ```
 
 ## NOTE
 
-The APIs excepts open, isVisible and isPopupWindow will throw error if provided winid is not a popup window.
-
+The APIs excepts open, isVisible and isPopupWindow will throw error if provided
+winid is not a popup window.
