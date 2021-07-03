@@ -1,22 +1,22 @@
-import { assertEquals, assertThrowsAsync, Denops, Vim } from "./deps.ts";
+import { assertEquals, assertThrowsAsync, test } from "./deps.ts";
 import * as popup from "./mod.ts";
 
-Denops.test({
+test({
   name: "Basic usage",
-  mode: "both",
+  mode: "vim",
   fn: async (denops) => {
-    const vim = new Vim(denops);
-    const bufnr = await vim.fn.bufadd("popup");
+    await denops.cmd("new");
+    const bufnr = 2;
 
-    const winid = await popup.open(vim, bufnr, {
+    const winid = await popup.open(denops, bufnr, {
       row: 3,
       col: 3,
       width: 10,
       height: 10,
       topline: 1,
     });
-    assertEquals(await popup.isVisible(vim, winid), true);
-    assertEquals(await popup.info(vim, winid), {
+    assertEquals(await popup.isVisible(denops, winid), true);
+    assertEquals(await popup.info(denops, winid), {
       row: 3,
       col: 3,
       width: 10,
@@ -24,15 +24,15 @@ Denops.test({
       topline: 1,
     });
 
-    await popup.move(vim, winid, {
+    await popup.move(denops, winid, {
       row: 5,
       col: 5,
       width: 12,
       height: 12,
       topline: 1,
     });
-    assertEquals(await popup.isVisible(vim, winid), true);
-    assertEquals(await popup.info(vim, winid), {
+    assertEquals(await popup.isVisible(denops, winid), true);
+    assertEquals(await popup.info(denops, winid), {
       row: 5,
       col: 5,
       width: 12,
@@ -40,10 +40,10 @@ Denops.test({
       topline: 1,
     });
 
-    await popup.close(vim, winid);
-    assertEquals(await popup.isVisible(vim, winid), false);
+    await popup.close(denops, winid);
+    assertEquals(await popup.isVisible(denops, winid), false);
     await assertThrowsAsync(async () => {
-      await popup.info(vim, winid); // should throw error because the window already closed.
+      await popup.info(denops, winid); // should throw error because the window already closed.
     });
   },
 });

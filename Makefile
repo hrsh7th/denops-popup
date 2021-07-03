@@ -1,5 +1,6 @@
-DENOPS_TEST_VIM ?= vim
-DENOPS_TEST_NVIM ?= nvim
+DENOPS_TEST_VIM := vim
+DENOPS_TEST_NVIM := nvim
+DENOPS_PATH := ../denops.vim
 
 .PHONY: fmt
 fmt:
@@ -11,7 +12,9 @@ lint:
 
 .PHONY: test
 test:
-	deno lint
-	deno fmt --check
-	DENOPS_POPUP_TEST=1 deno test --unstable -A
+	DENOPS_POPUP_TEST=1 \
+	DENOPS_TEST_VIM=${DENOPS_TEST_VIM} \
+	DENOPS_TEST_NVIM=${DENOPS_TEST_NVIM} \
+	DENOPS_PATH=${DENOPS_PATH} \
+		deno test --unstable -A
 

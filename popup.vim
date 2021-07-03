@@ -3,27 +3,27 @@ if exists('g:loaded_denops_popup')
 endif
 let g:loaded_denops_popup = v:true
 
-function! g:Denops_popup_window_open(...) abort
+function! Denops_popup_window_open(...) abort
   return call(function('s:_open'), a:000)
 endfunction
 
-function! g:Denops_popup_window_move(...) abort
+function! Denops_popup_window_move(...) abort
   return call(function('s:_move'), a:000)
 endfunction
 
-function! g:Denops_popup_window_close(...) abort
+function! Denops_popup_window_close(...) abort
   return call(function('s:_close'), a:000)
 endfunction
 
-function! g:Denops_popup_window_info(...) abort
+function! Denops_popup_window_info(...) abort
   return call(function('s:_info'), a:000)
 endfunction
 
-function! g:Denops_popup_window_is_visible(...) abort
+function! Denops_popup_window_is_visible(...) abort
   return call(function('s:_is_visible'), a:000)
 endfunction
 
-function! g:Denops_popup_window_is_popup_window(...) abort
+function! Denops_popup_window_is_popup_window(...) abort
   return call(function('s:_is_popup_window'), a:000)
 endfunction
 
@@ -41,19 +41,6 @@ else
 endif
 
 "
-" _close
-"
-if has('nvim')
-  function! s:_close(winid) abort
-    call nvim_win_close(a:winid, v:true)
-  endfunction
-else
-  function! s:_close(winid) abort
-    call popup_close(a:winid)
-  endfunction
-endif
-
-"
 " _move
 "
 if has('nvim')
@@ -63,6 +50,19 @@ if has('nvim')
 else
   function! s:_move(winid, style) abort
     call popup_move(a:winid, s:_style(a:style))
+  endfunction
+endif
+
+"
+" _close
+"
+if has('nvim')
+  function! s:_close(winid) abort
+    call nvim_win_close(a:winid, v:true)
+  endfunction
+else
+  function! s:_close(winid) abort
+    call popup_close(a:winid)
   endfunction
 endif
 
