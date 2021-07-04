@@ -1,6 +1,6 @@
-import { Denops, ensureNumber, load } from "./deps.ts";
+import { Denops, ensureNumber, load, once } from "./deps.ts";
 
-const once = <A extends unknown[], R extends Promise<unknown>>(
+const memo = <A extends unknown[], R extends Promise<unknown>>(
   f: (...args: A) => R,
 ) => {
   let v: R | undefined;
@@ -9,7 +9,11 @@ const once = <A extends unknown[], R extends Promise<unknown>>(
   };
 };
 
-const init = once(async (denops: Denops) => {
+const noop = () => {
+  return Promise.resolve();
+};
+
+const init = memo(async (denops: Denops) => {
   const path = new URL(".", import.meta.url);
   path.pathname = path.pathname + "popup.vim";
   await load(denops, path);
@@ -55,9 +59,15 @@ export const open = async (
   denops: Denops,
   bufnr: number,
   style: PopupWindowStyle,
+  event?: {
+    onClose: () => Promise<void>;
+  }
 ): Promise<number> => {
   await init(denops);
-  const winid = await denops.call("Denops_popup_window_open", bufnr, style);
+  const [onClose] = once(denops, event?.onClose ?? noop);
+  const winid = await denops.call("Denops_popup_window_open", bufnr, style, {
+    onClose: [denops.name, onClose]
+  });
   ensureNumber(winid);
   return winid;
 };
