@@ -1,11 +1,11 @@
 import { Denops, ensureNumber, load, once } from "./deps.ts";
 
 const memo = <A extends unknown[], R extends Promise<unknown>>(
-  f: (...args: A) => R,
+  f: (denops: Denops, ...args: A) => R,
 ) => {
   let v: R | undefined;
-  return (...args: A): R => {
-    return (Deno.env.get("DENOPS_POPUP_TEST") !== "1" && v) || (v = f(...args));
+  return (denops: Denops, ...args: A): R => {
+    return (denops.meta.mode !== "test" && v) || (v = f(denops, ...args));
   };
 };
 
@@ -22,7 +22,7 @@ const init = memo(async (denops: Denops) => {
 /**
  * popup window style definition.
  */
-type PopupWindowStyle = {
+export type PopupWindowStyle = {
   row: number;
   col: number;
   width: number;
@@ -36,15 +36,13 @@ type PopupWindowStyle = {
     | "bottomleft"
     | "bottomright"
     | "bottomcenter"
-    | "centerleft"
-    | "centerright"
     | "centercenter";
 };
 
 /**
  * popup window information.
  */
-type PopupWindowInfo = {
+export type PopupWindowInfo = {
   row: number;
   col: number;
   width: number;
@@ -55,14 +53,14 @@ type PopupWindowInfo = {
 /**
  * Open popup window.
  */
-export const open = async (
+export async function open(
   denops: Denops,
   bufnr: number,
   style: PopupWindowStyle,
   event?: {
     onClose: () => unknown;
   },
-): Promise<number> => {
+): Promise<number> {
   await init(denops);
   const [onClose] = once(denops, event?.onClose ?? noop);
   const winid = await denops.call("Denops_popup_window_open", bufnr, style, {
@@ -70,72 +68,74 @@ export const open = async (
   });
   ensureNumber(winid);
   return winid;
-};
+}
 
 /**
  * Move popup window.
  */
-export const move = async (
+export async function move(
   denops: Denops,
   winid: number,
   style: PopupWindowStyle,
-): Promise<void> => {
+): Promise<void> {
   await init(denops);
   await assert(denops, winid);
   await denops.call("Denops_popup_window_move", winid, style);
-};
+}
 
 /**
  * Close popup window.
  */
-export const close = async (denops: Denops, winid: number): Promise<void> => {
+export async function close(denops: Denops, winid: number): Promise<void> {
   await init(denops);
   await assert(denops, winid);
   await denops.call("Denops_popup_window_close", winid);
-};
+}
 
 /**
- * Get if specified popup window visible or not.
+ * Return PopupWindowInfo for the specified winid.
  */
-export const info = async (
+export async function info(
   denops: Denops,
   winid: number,
-): Promise<PopupWindowInfo> => {
+): Promise<PopupWindowInfo> {
   await init(denops);
   await assert(denops, winid);
   return await denops.call(
     "Denops_popup_window_info",
     winid,
   ) as PopupWindowInfo;
-};
+}
 
 /**
- * Get if specified popup window is visible or not.
+ * Return the specified winid is visible or not.
  *
- * NOTE: If specified winid is not a popup window, this API always returns false.
+ * NOTE: If specified winid is not a popup window, this API always return false.
  */
-export const isVisible = async (
+export async function isVisible(
   denops: Denops,
   winid: number,
-): Promise<boolean> => {
+): Promise<boolean> {
   await init(denops);
   const is = await denops.call("Denops_popup_window_is_visible", winid);
   ensureNumber(is);
   return (is === 1) && isPopupWindow(denops, winid);
-};
+}
 
 /**
- * Assert if specified winid is popup or not.
+ * Return the specified winid is popup or not.
+ *
+ * NOTE: If specified winid is not a valid window, this API always return false.
 */
-export const isPopupWindow = async (
+export async function isPopupWindow(
   denops: Denops,
   winid: number,
-): Promise<boolean> => {
+): Promise<boolean> {
   await init(denops);
   const is = await denops.call("Denops_popup_window_is_popup_window", winid);
   ensureNumber(is);
   return is === 1;
-};
+}
 
 const assert = async (denops: Denops, winid: number): Promise<void> => {
   if (!(await isPopupWindow(denops, winid))) {

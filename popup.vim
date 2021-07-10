@@ -185,7 +185,7 @@ endif
 " _resolve_origin
 "
 function! s:_resolve_origin(style) abort
-  if index(['topleft', 'topright', 'bottomleft', 'bottomright', 'topcenter', 'bottomcenter'], get(a:style, 'origin', '')) == -1
+  if index(['topleft', 'topright', 'topcenter', 'bottomleft', 'bottomright', 'bottomcenter', 'centercenter'], get(a:style, 'origin', '')) == -1
     let a:style.origin = 'topleft'
   endif
 
@@ -195,15 +195,15 @@ function! s:_resolve_origin(style) abort
   elseif a:style.origin ==# 'topright'
     let a:style.col = a:style.col - (a:style.width - 1)
     let a:style.row = a:style.row
+  elseif a:style.origin ==# 'topcenter'
+    let a:style.col = a:style.col - float2nr(a:style.width / 2)
+    let a:style.row = a:style.row
   elseif a:style.origin ==# 'bottomleft'
     let a:style.col = a:style.col
     let a:style.row = a:style.row - (a:style.height - 1)
   elseif a:style.origin ==# 'bottomright'
     let a:style.col = a:style.col - (a:style.width - 1)
     let a:style.row = a:style.row - (a:style.height - 1)
-  elseif a:style.origin ==# 'topcenter'
-    let a:style.col = a:style.col - float2nr(a:style.width / 2)
-    let a:style.row = a:style.row
   elseif a:style.origin ==# 'bottomcenter'
     let a:style.col = a:style.col - float2nr(a:style.width / 2)
     let a:style.row = a:style.row - (a:style.height - 1)
