@@ -60,13 +60,13 @@ export const open = async (
   bufnr: number,
   style: PopupWindowStyle,
   event?: {
-    onClose: () => Promise<void>;
-  }
+    onClose: () => unknown;
+  },
 ): Promise<number> => {
   await init(denops);
   const [onClose] = once(denops, event?.onClose ?? noop);
   const winid = await denops.call("Denops_popup_window_open", bufnr, style, {
-    onClose: [denops.name, onClose]
+    onClose: [denops.name, onClose],
   });
   ensureNumber(winid);
   return winid;
