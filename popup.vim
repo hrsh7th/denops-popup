@@ -31,12 +31,16 @@ endfunction
 " _open
 "
 if has('nvim')
-  function! s:_open(bufnr, style) abort
-    return nvim_open_win(a:bufnr, v:false, s:_style(a:style))
+  function! s:_open(bufnr, style, event) abort
+    let l:winid = nvim_open_win(a:bufnr, v:false, s:_style(a:style))
+    let s:win_close_listeners[l:winid] = { -> denops#notify(a:event.onClose[0], a:event.onClose[1], []) }
+    return l:winid
   endfunction
 else
-  function! s:_open(bufnr, style) abort
-    return popup_create(a:bufnr, s:_style(a:style))
+  function! s:_open(bufnr, style, event) abort
+    let l:style = s:_style(a:style)
+    let l:style.callback = { -> denops#notify(a:event.onClose[0], a:event.onClose[1], []) }
+    return popup_create(a:bufnr, l:style)
   endfunction
 endif
 
@@ -49,7 +53,9 @@ if has('nvim')
   endfunction
 else
   function! s:_move(winid, style) abort
-    call popup_move(a:winid, s:_style(a:style))
+    let l:style = s:_style(a:style)
+    call popup_setoptions(a:winid, l:style)
+    call popup_move(a:winid, l:style)
   endfunction
 endif
 
@@ -237,5 +243,20 @@ else
     endif
     return a:style
   endfunction
+endif
+
+
+let s:win_close_listeners = {}
+if has('nvim')
+  function! s:notify_closed() abort
+    let l:winid = expand('<afile>')
+    if has_key(s:win_close_listeners, l:winid)
+      call remove(s:win_close_listeners, l:winid)()
+    endif
+  endfunction
+  augroup denops_popup_win_close_listeners
+     autocmd!
+     autocmd WinClosed * call s:notify_closed()
+  augroup END
 endif
 
