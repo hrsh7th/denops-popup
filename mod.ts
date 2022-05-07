@@ -1,4 +1,4 @@
-import { Denops, ensureNumber, load, once } from "./deps.ts";
+import { Denops, assertNumber, load, once } from "./deps.ts";
 
 const memo = <A extends unknown[], R extends Promise<unknown>>(
   f: (denops: Denops, ...args: A) => R,
@@ -66,7 +66,7 @@ export async function open(
   const winid = await denops.call("Denops_popup_window_open", bufnr, style, {
     onClose: [denops.name, onClose],
   });
-  ensureNumber(winid);
+  assertNumber(winid);
   return winid;
 }
 
@@ -118,7 +118,7 @@ export async function isVisible(
 ): Promise<boolean> {
   await init(denops);
   const is = await denops.call("Denops_popup_window_is_visible", winid);
-  ensureNumber(is);
+  assertNumber(is);
   return (is === 1) && isPopupWindow(denops, winid);
 }
 
@@ -133,7 +133,7 @@ export async function isPopupWindow(
 ): Promise<boolean> {
   await init(denops);
   const is = await denops.call("Denops_popup_window_is_popup_window", winid);
-  ensureNumber(is);
+  assertNumber(is);
   return is === 1;
 }
 
