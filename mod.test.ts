@@ -1,4 +1,4 @@
-import { assertEquals, assertThrowsAsync, test } from "./deps.ts";
+import { assertEquals, assertRejects, test } from "./deps.ts";
 import * as popup from "./mod.ts";
 
 test({
@@ -50,7 +50,7 @@ test({
     await popup.close(denops, winid);
     assertEquals(state.closed, true);
     assertEquals(await popup.isVisible(denops, winid), false);
-    await assertThrowsAsync(async () => {
+    await assertRejects(async () => {
       await popup.info(denops, winid); // should throw error because the window already closed.
     });
   },
