@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "https://deno.land/std@0.138.0/testing/asserts.ts";;
+import { assertEquals, assertRejects } from "https://deno.land/std@0.138.0/testing/asserts.ts";
 import { test } from "https://deno.land/x/denops_std@v3.3.1/test/mod.ts";
 import * as popup from "./mod.ts";
 
