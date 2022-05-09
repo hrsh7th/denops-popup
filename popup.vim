@@ -27,6 +27,10 @@ function! Denops_popup_window_is_popup_window(...) abort
   return call(function('s:_is_popup_window'), a:000)
 endfunction
 
+function! Denops_popup_window_list(...) abort
+  return call(function('s:_list'), a:000)
+endfunction
+
 "
 " _open
 "
@@ -131,6 +135,21 @@ if has('nvim')
 else
   function! s:_is_popup_window(winid) abort
     return !!(winheight(a:winid) != -1 && win_id2win(a:winid) == 0)
+  endfunction
+endif
+
+"
+" _list
+"
+if has('nvim')
+  function! s:_list() abort
+    let l:info_list = getwininfo()
+    let l:winid_list = map(info_list, 'v:val["winid"]')
+    return filter(winid_list, 's:_is_popup_window(v:val)')
+  endfunction
+else
+  function! s:_list() abort
+    return filter(popup_list(), 'popup_getpos(v:val).visible')
   endfunction
 endif
 

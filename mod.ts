@@ -1,7 +1,7 @@
 import type { Denops } from "https://deno.land/x/denops_std@v3.3.1/mod.ts";
 import { load } from "https://deno.land/x/denops_std@v3.3.1/helper/mod.ts";
 import { once } from "https://deno.land/x/denops_std@v3.3.1/anonymous/mod.ts";
-import { assertNumber } from "https://deno.land/x/unknownutil@v2.0.0/mod.ts";
+import { assertNumber, assertArray, isNumber } from "https://deno.land/x/unknownutil@v2.0.0/mod.ts";
 
 const memo = <A extends unknown[], R extends Promise<unknown>>(
   f: (denops: Denops, ...args: A) => R,
@@ -145,3 +145,15 @@ const assert = async (denops: Denops, winid: number): Promise<void> => {
     throw new TypeError(`Invalid winid: ${winid} is not a popup window.`);
   }
 };
+
+/**
+ * Return a list of winid of all popup windows.
+ */
+export async function list(
+  denops: Denops,
+): Promise<number[]> {
+  await init(denops);
+  const list = await denops.call("Denops_popup_window_list");
+  assertArray(list, isNumber);
+  return list;
+}
