@@ -149,7 +149,7 @@ if has('nvim')
   endfunction
 else
   function! s:_list() abort
-    return popup_list()
+    return filter(popup_list(), 'popup_getpos(v:val).visible')
   endfunction
 endif
 
