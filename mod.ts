@@ -1,4 +1,7 @@
-import { Denops, assertNumber, load, once } from "./deps.ts";
+import type { Denops } from "https://deno.land/x/denops_std@v3.3.1/mod.ts";
+import { load } from "https://deno.land/x/denops_std@v3.3.1/helper/mod.ts";
+import { once } from "https://deno.land/x/denops_std@v3.3.1/anonymous/mod.ts";
+import { assertNumber } from "https://deno.land/x/unknownutil@v2.0.0/mod.ts";
 
 const memo = <A extends unknown[], R extends Promise<unknown>>(
   f: (denops: Denops, ...args: A) => R,
